@@ -82,18 +82,25 @@ Function FormatHTML() {
 	</style>
 "@
 
-	# Collect data
+	# Collection
+	$s = Get-SPServer
+	$wa = Get-SPWebApplication
+	$sa = Get-SPServiceApplication
+	$cdb = Get-SPContentDatabase
+	$wp = Get-SPSolution
+
+	# Merge HTML
 	$html += "<h2>Farm</h2>"
 	$html += FormatTable (CollectFarm)
-	$html += "<h2>Server</h2>"
+	$html += "<h2>Server  $($s.Count)</h2>"
 	$html += FormatTable (CollectServer)
-	$html += "<h2>Web App</h2>"
+	$html += "<h2>Web App  $($wa.Count)</h2>"
 	$html += FormatTable (CollectWebApp)
-	$html += "<h2>Service App</h2>"
+	$html += "<h2>Service App  $($sa.Count)</h2>"
 	$html += FormatTable (CollectSvcApp)
-	$html += "<h2>Content DB</h2>"
+	$html += "<h2>Content DB $($cdb.Count)</h2>"
 	$html += FormatTable (CollectContentDatabase)
-	$html += "<h2>Solution</h2>"
+	$html += "<h2>Solution  $($wsp.Count)</h2>"
 	$html += FormatTable (CollectSolution)
 	$html += "<hr>Generated at $(Get-Date)"
 
@@ -175,7 +182,7 @@ function CollectWebApp() {
 		$obj = New-Object -Type PSObject
 		$obj | Add-Member -MemberType NoteProperty -Name "URL" -Value $wa.Url
 		$obj | Add-Member -MemberType NoteProperty -Name "HTTP" -Value $resp.StatusCode
-		$obj | Add-Member -MemberType NoteProperty -Name "HTTP (Sec)" -Value [math]::round($meas.TotalSeconds,2)
+		$obj | Add-Member -MemberType NoteProperty -Name "HTTP (Sec)" -Value ([math]::round($meas.TotalSeconds,2))
 		$coll += $obj
 	}
 	return $coll
@@ -267,7 +274,7 @@ function CollectServer() {
 }
 
 function CleanHTML($html) {
-	$html = $html.Replace(">Online</td>"," bgcolor='limegreen'>Online</a>").Replace(">True</td>"," bgcolor='limegreen'>True</a>").Replace(">NotDeployed</td>"," bgcolor='yellow'>NotDeployed</a>").Replace("></td>"," bgcolor='yellow'></a>").Replace("<th>"," <th bgcolor='lightblue'>").Replace(">200"," bgcolor='limegreen'>200")
+	$html = $html.Replace(">Online</td>"," bgcolor='limegreen'>Online</a>").Replace(">True</td>"," bgcolor='limegreen'>True</a>").Replace(">NotDeployed</td>"," bgcolor='yellow'>NotDeployed</a>").Replace("<th>"," <th bgcolor='lightblue'>").Replace(">200"," bgcolor='limegreen'>200").Replace(">WebApplicationDeployed"," bgcolor='limegreen'>WebApplicationDeployed").Replace(">GlobalDeployed"," bgcolor='limegreen'>GlobalDeployed").Replace(">GlobalAndWebApplicationDeployed"," bgcolor='limegreen'>GlobalAndWebApplicationDeployed")
 	return $html
 }
 
@@ -288,4 +295,6 @@ Function Main() {
 
 	# Send mail
 	SendMail $html
-	Remove-Item $
+	Remove-Item $file -Confirm:$false -Force
+}
+Main
